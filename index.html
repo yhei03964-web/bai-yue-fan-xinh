@@ -1,0 +1,350 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宁安城微恐游戏</title>
+<style>
+body{margin:0;background:black;color:white;overflow:hidden;}
+#img{position:absolute;width:100%;height:100%;object-fit:cover;}
+#overlay{position:absolute;bottom:0;width:100%;padding:5vw;background:rgba(0,0,0,0.7);}
+#text{font-size:4.5vw;line-height:1.4;}
+#buttons{margin-top:3vw;}
+#startScreen{position:absolute;width:100%;height:100%;background:black;display:flex;align-items:center;justify-content:center;z-index:1000;}
+#startScreen button{font-size:5vw;padding:2vw 5vw;}
+input{font-size:4vw;padding:0.5vw;width:80%;}
+button{font-size:4vw;padding:1vw 3vw;margin:0.5vw 0;}
+</style>
+</head>
+<body>
+
+<!-- 音乐与音效 -->
+<audio id="bgm" loop></audio>
+<audio id="sfx" src="scare.mp3"></audio>
+
+<!-- 图片显示 -->
+<img id="img" src="">
+
+<!-- 文字与按钮 -->
+<div id="overlay">
+  <div id="text"></div>
+  <div id="buttons"></div>
+</div>
+
+<!-- 开始按钮 -->
+<div id="startScreen">
+  <button id="startBtn">开始游戏</button>
+</div>
+
+<script>
+let playerName="";
+let timer=null;
+
+const text=document.getElementById("text");
+const buttons=document.getElementById("buttons");
+const img=document.getElementById("img");
+const bgmAudio=document.getElementById("bgm");
+const sfxAudio=document.getElementById("sfx");
+const startScreen=document.getElementById("startScreen");
+const startBtn=document.getElementById("startBtn");
+
+// ===== 音乐播放 =====
+function bgm(src){
+    bgmAudio.pause();
+    bgmAudio.src=src;
+    bgmAudio.play().catch(()=>{});
+}
+
+// ===== 打字效果 =====
+function type(str,cb){
+    if(timer) clearInterval(timer);
+    let i=0;
+    text.innerHTML="";
+    timer=setInterval(()=>{
+        text.innerHTML+=str[i];
+        i++;
+        if(i>=str.length){
+            clearInterval(timer);
+            timer=null;
+            if(cb) cb();
+        }
+    },35);
+}
+
+// ===== 抖动 =====
+function shake(){
+    let c=0;
+    let t=setInterval(()=>{
+        document.body.style.transform=`translate(${Math.random()*12-6}px,${Math.random()*12-6}px)`;
+        c++;
+        if(c>20){clearInterval(t);document.body.style.transform="";}
+    },40);
+}
+
+// ===== 闪屏 =====
+function flash(){
+    let f=document.createElement("div");
+    f.style="position:absolute;width:100%;height:100%;background:white;z-index:9999;";
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(),120);
+}
+
+// ===== 恐怖音效 =====
+function scare(){
+    sfxAudio.currentTime=0;
+    sfxAudio.play().catch(()=>{});
+    flash();
+    shake();
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+// ===== 用户点击开始游戏 =====
+startBtn.addEventListener("click",()=>{
+    startScreen.style.display="none";
+    bgm("b1.mp3");  // 第一次点击就播放背景音乐
+    start();
+});
+
+// ===== 开始 =====
+function start(){
+    type(`宿主您好，欢迎来到宁安城下面请选择您的身份！（请宿主注意⚠️这里的是同人微恐游戏！剧情有所改动！请不要产生怀疑！请不要产生怀疑！请不要产生怀疑！）
+您的身份有以下三个选项:`,()=>{
+        buttons.innerHTML=`
+        <button onclick="chooseId('maid')">城主府中白烁贴身侍女</button><br><br>
+        <button onclick="chooseId('tower')">不羁楼招募人员</button><br><br>
+        <button onclick="chooseId('people')">宁安城普通百姓</button>
+        `;
+    });
+}
+
+// ===== 身份选择 =====
+function chooseId(id){
+    type("请输入您的名字：",()=>{
+        buttons.innerHTML=`
+        <input id="name"><br><br>
+        <button onclick="save('${id}')">确认</button>
+        `;
+    });
+}
+
+function save(id){
+    playerName=document.getElementById("name").value||"你";
+    if(id==="maid"){ maid(); }
+    else{ type("该身份剧情暂未开放",()=>{ buttons.innerHTML=`<button onclick="start()">返回</button>`; }); }
+}
+
+// ===== 侍女剧情 =====
+function maid(){
+    type(`⚠️接下来您已成为白烁的贴身侍女！
+恭喜宿主触发隐藏奖励！此身份为白烁秘密好友！`,()=>{
+        buttons.innerHTML=`<button onclick="s1()">继续</button>`;
+    });
+}
+
+// ===== 正式剧情 =====
+function s1(){
+    img.src="1.jpg";
+    type("你睁开眼，发现自己正处于一个房间中，白烁在你面前坐着。",()=>{
+        type(`“${playerName}，你说，这个世上到底有仙吗？”`,()=>{
+            buttons.innerHTML=`
+            <input id="a"><br><br>
+            <button onclick="s2()">确定</button>
+            `;
+        });
+    });
+}
+
+function s2(){
+    let a=document.getElementById("a").value||"……";
+    type(`“${a}”`,()=>{
+        type("“无论如何，我也要找到阿曦！”",()=>{
+            type(`“${playerName}，我们去不羁楼吧，梵樾有把柄在我手上，肯定会帮我的！”`,()=>{
+                buttons.innerHTML=`<button onclick="s3()">继续</button>`;
+            });
+        });
+    });
+}
+
+function s3(){
+    img.src="2.jpg";
+    type("你和白烁来到了不羁楼，他们两个去到了主殿交谈，留下了你和天火、藏山呆在这里。藏山整个人状态很奇怪，像是整个人忍受着极大的恐惧和胁迫。天火也一直在一旁看着你……",()=>{
+        type("藏山一直保持着这样的状态，并且每次你呼吸一次之后，会发现，他会忽然又出现在你身边的某个位置，然后用鼻子好像在嗅着什么？",()=>{
+            type("你感到有一丝惊恐。",()=>{
+                buttons.innerHTML=`<button onclick="s4()">继续</button>`;
+            });
+        });
+    });
+}
+
+function s4(){
+    type("……终于，白烁和梵樾从房间走了出来，而天火他们两个恢复了正常",()=>{
+        buttons.innerHTML=`<button onclick="h1()">继续</button>`;
+    });
+}
+
+// ===== 恐怖剧情 =====
+function h1(){
+    bgm("s1.mp3");
+    type("你刚想开口，却看见梵樾的手动了一下",()=>{
+        img.src="3.jpg";
+        scare();
+        buttons.innerHTML=`<button onclick="h2()">继续</button>`;
+    });
+}
+
+function h2(){
+    type("你的眼前泛黑，并且有血滴在了你的眼睛里",()=>{
+        img.src="4.jpg";
+        scare();
+        buttons.innerHTML=`<button onclick="h3()">继续</button>`;
+    });
+}
+
+function h3(){
+    text.innerHTML="⚠️<br>⚠️<br>⚠️";
+    shake();
+    setTimeout(()=>{
+        text.innerHTML="<span style='color:red;font-size:8vw;'>SOS！ SOS！ SOS！</span>";
+        scare();
+        buttons.innerHTML=`<button onclick="h4()">继续</button>`;
+    },1500);
+}
+
+function h4(){
+    type("宿主请注意！您被发现身份！已被抹杀！宿主请注意！宿主请注意！",()=>{
+        buttons.innerHTML=`
+        <button onclick="yes()">是</button>
+        <button onclick="no()">否</button>
+        `;
+    });
+}
+
+function no(){
+    type("代码错误❌，警告⚠️，宿主意思与游戏为敌！不再配合！抹除数据！消失！",()=>{
+        shake();
+    });
+}
+
+function yes(){
+    bgm("b2.mp3");
+    type("你猛的一颤，回到了门口，再一次碰见了白烁和梵樾。",()=>{
+        img.src="5.jpg";
+        type(`梵樾这时看向你，猛的发问开口，“${playerName}，你在抖什么？”`,()=>{
+            buttons.innerHTML=`
+            <input id="b"><br><br>
+            <button onclick="s5()">确定</button>
+            `;
+        });
+    });
+}
+
+function s5(){
+    let b=document.getElementById("b").value||"……";
+    type(`“${b}”`,()=>{
+        type("“哦……是嘛?”",()=>{
+            type("==$$##____/[]{{}}<>请不要让他们发现你的身份",()=>{
+                buttons.innerHTML=`<button onclick="final()">继续</button>`;
+            });
+        });
+    });
+}
+
+// ===== 后半剧情 =====
+function final(){
+    bgm("b3.mp3");
+    type(`宁安城最近弥漫着恐惧的氛围，好像出现了一种传染病，人好好的走在路上，忽然会异变，发狂，见到活物就开始撕咬。你在买完白烁想要的东西回府时，见到了许多这样的人，还好被官兵挡住了，你才逃过一劫。`,()=>{
+        buttons.innerHTML=`<button onclick="nextA()">继续</button>`;
+    });
+}
+
+function nextA(){
+    type(`你奔到白烁面前，喘着气，还是告诉了她，隐晦这件事。`,()=>{
+        buttons.innerHTML=`
+        <input id="d"><br><br>
+        <button onclick="nextB()">确定</button>
+        `;
+    });
+}
+
+function nextB(){
+    let d=document.getElementById("d").value||"……";
+    img.src="9.jpg";
+    bgm("s2.mp3");
+    type(`白烁深深的看了你一眼，轻轻的点了点头`,()=>{
+        setTimeout(()=>{
+            text.innerHTML="⚠️⚠️⚠️！出现❌！游戏意思发生变故！有意识？⚠️⚠️⚠️没有！？❌❌❌";
+            shake();
+        },500);
+        setTimeout(()=>nextC(),2000);
+    });
+}
+
+function nextC(){
+    bgm("b4.mp3");
+    img.src="10.jpg";
+    type(`白烁、梵樾、天火、藏山还有你，都站在一处，对面是瑱宇
+“瑱宇，把解药交出来！”
+“哈哈哈哈想都别想！”`,()=>{
+        buttons.innerHTML=`<button onclick="nextD()">继续</button>`;
+    });
+}
+
+function nextD(){
+    bgm("s3.mp3");
+    type(`就在你们僵持不下的时候，瑱宇忽然倒下，身体开始扭曲从脚踝处开始向脖颈处卷，肋骨从皮中翻了出来，下颌两边的皮肉开始向脸中心腐烂……
+一阵恶臭袭来，人对血腥最骨子的恐惧然后不由得反胃，想吐！`,()=>{
+        shake();
+        setTimeout(()=>{
+            img.src="11.jpg";
+            flash();
+            setTimeout(()=>img.src="",800);
+            buttons.innerHTML=`<button onclick="nextE()">继续</button>`;
+        },1000);
+    });
+}
+
+function nextE(){
+    type(`什么？
+你转过头，看见了白烁。她的手从梵樾的胸口伸了出来，握着心脏🫀`,()=>{
+        buttons.innerHTML=`<button onclick="nextF()">继续</button>`;
+    });
+}
+
+function nextF(){
+    bgm("b6.mp3");
+    img.src="12.jpg";
+    type(`你离梵樾很近，因此，你能感受到有黏热的液体从你的脸上滑了下来，斜着落在你的嘴旁边，你下意识舔了一下，一股咸腥味儿。
+你实在控制不住，吐了出来
+白烁把手收了出来，你看见她满身是血。天火和藏山早在你还没发现的时候变成了血水
+白烁向你问了一个问题“你相信吗？”
+你感到恐惧与好奇，到底是什么？什么相信？
+是什么？
+难道？
+游戏？
+提示！
+不要被找到？`,()=>{
+        bgm("b7.mp3");
+        type(`“白烁！”`,()=>{
+            shake();
+            type(`你看见白烁整个人抖动了起来！
+“我到底在干什么？”
+白烁变换出了异王剑，刺向自己胸口。
+白光自白烁所在处剧烈发散，你发现周围开始扭曲，并出现一些绿色乱码！
+而自天上，你隐约看见一点紫色琉璃的光，又一个极强的白光从中射了下来！
+两团白光混在一起！刺的人睁不开眼！
+是星月箭
+你好像懂了！
+所以，这个游戏是世界，还是这个世界是游戏……？
+星月法则到底是什么？而到底不要被什么找到？
+星月法则从不在星月神弓制定，而在所掌控它的主神所制定……？
+神……什么?`,()=>{
+                bgm("b8.mp3");
+                type(`你的耳边出现了电流音，“失败？成功？……分别不出。Code error, need to try again！”`,()=>{
+                    buttons.innerHTML="";
+                });
+            });
+        });
+    });
+}
+
+</script>
+</body>
+</html>
